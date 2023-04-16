@@ -15,10 +15,10 @@
 | 20  | 10  | 90  | 76  |
 
 ● Step 2. We fetch p positive prime numbers before & after x, and including x, such that we have
-the following set px -
-    o For x=17; px={3,5,7,11,13,17, 19,23,29,31,37} <br>
-    o For x=28; px={11,13,17, 19,23,29,31,37,41,43} <br>
-    o For x=10; px={2,3,5,11,13,17,19,23} <br>
+the following set px - <br>
+o For x=17; px={3,5,7,11,13,17, 19,23,29,31,37} <br>
+o For x=28; px={11,13,17, 19,23,29,31,37,41,43} <br>
+o For x=10; px={2,3,5,11,13,17,19,23} <br>
 
 (Note: In this case, there are only 3 prime numbers before x and only these 3 have been included in px. However, we have included p=5 prime numbers after x in the set px. Observe, we do not go less than 0 in the px.)
 
@@ -80,7 +80,22 @@ with the following considerations.
 8. Finally, the controller process will calculate the average of n values of `wpapx` as `fapx` and
    report/print to the console the value of `fapx`.
 
-The program should report the intermediate results/ progress at the following stages - 1. After reading the input. 2. After creating the pipe and the worker process. 3. After the worker process begins execution, it should report the row it is processing. 4. After creation of worker threads. 5. After the worker thread starts executing. 6. At each level of discovery of a prime number. 7. After all, px is calculated. 8. After thapx is calculated. 9. After thread termination / thread join. 10. After all thapx is calculated 11. After wpapx is calculated 12. After wpapx is written to the controller 13. After Controller captures a wpapx 14. After the controller calculates the fapx 15. All invalidation errors.
+The program should report the intermediate results/ progress at the following stages -
+
+1. After reading the input. <br>
+2. After creating the pipe and the worker process. <br>
+3. After the worker process begins execution, it should report the row it is processing. <br>
+4. After creation of worker threads. 5. After the worker thread starts executing. <br>
+5. At each level of discovery of a prime number. <br>
+6. After all, px is calculated. <br>
+7. After thapx is calculated. <br>
+8. After thread termination / thread join. <br>
+9. After all thapx is calculated <br>
+10. After wpapx is calculated <br>
+11. After wpapx is written to the controller <br>
+12. After Controller captures a wpapx <br>
+13. After the controller calculates the fapx <br>
+14. All invalidation errors. <br>
 
 ---
 
