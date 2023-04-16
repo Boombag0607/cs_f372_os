@@ -9,8 +9,11 @@
 ● Step 1. Read in the input (Say the 2D array is)
 
 | 17 | 28 | 67 | 65 |
+| --- | --- | --- | --- |
 | 22 | 19 | 11 | 77 |
+| --- | --- | --- | --- |
 | 89 | 78 | 45 | 40 |
+| --- | --- | --- | --- |
 | 20 | 10 | 90 | 76 |
 
 ● Step 2. We fetch p positive prime numbers before & after x, and including x, such that we have
@@ -164,11 +167,22 @@ The implementation will be based on the following -
         a. The implementation should provide for single client operations.
         b. The implementation should provide for multiple client operations concurrently.
 
-The following intermediate states of the server/client must be logged. 1. The server initiates and creates the connect channel. 2. The server receives a register request on the connect channel.
-a. On successful creation of a comm channel for a client
-b. On successful response made to the client’s register request. 3. The server receives an unregister request
-a. On successful cleanup of the comm channel. 4. The server receives a service request on the comm channel. 5. The server responds to the client on the comm channel. 6. The server should maintain and print the summary info.
-a. The list of registered clients
-b. The count of requests serviced for the client. Note that failed requests which are
-responded to are also counted in.
-c. The total count of requests serviced for all clients. 7. The client makes register request to the server on the connect channel. 8. The client connects to the server on the comm channel. 9. The client sends a request to the server on the comm channel 10. The client receives a response on the comm channel. 11. All error states, and their mitigations/counter actions.
+The following intermediate states of the server/client must be logged.
+
+1. The server initiates and creates the connect channel.
+2. The server receives a register request on the connect channel.
+   a. On successful creation of a comm channel for a client
+   b. On successful response made to the client’s register request.
+3. The server receives an unregister request
+   a. On successful cleanup of the comm channel.
+4. The server receives a service request on the comm channel.
+5. The server responds to the client on the comm channel.
+6. The server should maintain and print the summary info.
+   a. The list of registered clients
+   b. The count of requests serviced for the client. Note that failed requests which are responded to are also counted in.
+   c. The total count of requests serviced for all clients.
+7. The client makes register request to the server on the connect channel.
+8. The client connects to the server on the comm channel.
+9. The client sends a request to the server on the comm channel
+10. The client receives a response on the comm channel.
+11. All error states, and their mitigations/counter actions.
