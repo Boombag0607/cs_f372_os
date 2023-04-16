@@ -101,7 +101,7 @@ The program should report the intermediate results/ progress at the following st
 
 ## Assignment 2
 
-A POSIX compliant C program(s) for the following scenario -
+A POSIX compliant C program(s) for the following scenario - <br>
 &rarr; There is a client server application for message passing and logging, which comprises of 1 server and “n” clients. The applications are meant to be running in a single system and exchange data using stateless communication (i.e., single message block should be passed and completed in a single communication loop). Every request from the clients to the server is replied to the client by the server. Every action is initiated by the client and acted upon by the server. The system follows a request-response mechanism and provides for the following set of actions for the client and server. The client and server communicate with the following actions -
 
 ### 1. REGISTER
