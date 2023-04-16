@@ -16,9 +16,10 @@
 
 ● Step 2. We fetch p positive prime numbers before & after x, and including x, such that we have
 the following set px
-o For x=17; px={3,5,7,11,13,17, 19,23,29,31,37}
-o For x=28; px={11,13,17, 19,23,29,31,37,41,43}
-o For x=10; px={2,3,5,11,13,17,19,23} (Note: In this case, there are only 3
+o For x=17; px={3,5,7,11,13,17, 19,23,29,31,37} <br>
+o For x=28; px={11,13,17, 19,23,29,31,37,41,43} <br>
+o For x=10; px={2,3,5,11,13,17,19,23} <br> 
+(Note: In this case, there are only 3
 prime numbers before x and only these 3 have been included in px. However, we have
 included p=5 prime numbers after x in the set px. Observe, we do not go less than 0 in
 the px.)
@@ -27,10 +28,10 @@ the px.)
 now we have 1 `thapx` for each x.
 
 ▪ For x=17; px= {3,5,7,11,13,17, 19,23,29,31,37};
-`thapx`=17
+`thapx`=17 <br>
 ▪ For x=28; px={11,13,17, 19,23,29,31,37,41,43};
-`thapx`=26
-▪ For x=10; px={2,3,5,11,13,17,19,23}; `thapx`=11
+`thapx`=26 <br>
+▪ For x=10; px={2,3,5,11,13,17,19,23}; `thapx`=11 <br>
 
 ● Step 4. Calculate the average (ignore any decimal portion) of n such values of `thapx`, say we call
 it `wpapx`
