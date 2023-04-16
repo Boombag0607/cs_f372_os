@@ -11,9 +11,7 @@
 | 17 | 28 | 67 | 65 |
 | --- | --- | --- | --- |
 | 22 | 19 | 11 | 77 |
-| --- | --- | --- | --- |
 | 89 | 78 | 45 | 40 |
-| --- | --- | --- | --- |
 | 20 | 10 | 90 | 76 |
 
 ● Step 2. We fetch p positive prime numbers before & after x, and including x, such that we have
