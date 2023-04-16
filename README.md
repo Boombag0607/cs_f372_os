@@ -8,30 +8,28 @@
 
 ● Step 1. Read in the input (Say the 2D array is)
 
-| 17 | 28 | 67 | 65 |
+| 17  | 28  | 67  | 65  |
 | --- | --- | --- | --- |
-| 22 | 19 | 11 | 77 |
-| 89 | 78 | 45 | 40 |
-| 20 | 10 | 90 | 76 |
+| 22  | 19  | 11  | 77  |
+| 89  | 78  | 45  | 40  |
+| 20  | 10  | 90  | 76  |
 
 ● Step 2. We fetch p positive prime numbers before & after x, and including x, such that we have
-the following set px
-o For x=17; px={3,5,7,11,13,17, 19,23,29,31,37} <br>
-o For x=28; px={11,13,17, 19,23,29,31,37,41,43} <br>
-o For x=10; px={2,3,5,11,13,17,19,23} <br> 
-(Note: In this case, there are only 3
-prime numbers before x and only these 3 have been included in px. However, we have
-included p=5 prime numbers after x in the set px. Observe, we do not go less than 0 in
-the px.)
+the following set px -
+    o For x=17; px={3,5,7,11,13,17, 19,23,29,31,37} <br>
+    o For x=28; px={11,13,17, 19,23,29,31,37,41,43} <br>
+    o For x=10; px={2,3,5,11,13,17,19,23} <br>
+
+(Note: In this case, there are only 3 prime numbers before x and only these 3 have been included in px. However, we have included p=5 prime numbers after x in the set px. Observe, we do not go less than 0 in the px.)
 
 ● Step 3. Calculate average (ignore any decimal portion) of each px, say we call it `thapx`, such that
 now we have 1 `thapx` for each x.
 
-▪ For x=17; px= {3,5,7,11,13,17, 19,23,29,31,37};
-`thapx`=17 <br>
-▪ For x=28; px={11,13,17, 19,23,29,31,37,41,43};
-`thapx`=26 <br>
-▪ For x=10; px={2,3,5,11,13,17,19,23}; `thapx`=11 <br>
+▪ For x = 17; px = {3,5,7,11,13,17, 19,23,29,31,37};
+`thapx` = 17 <br>
+▪ For x = 28; px = {11,13,17, 19,23,29,31,37,41,43};
+`thapx` = 26 <br>
+▪ For x = 10; px = {2,3,5,11,13,17,19,23}; `thapx` = 11 <br>
 
 ● Step 4. Calculate the average (ignore any decimal portion) of n such values of `thapx`, say we call
 it `wpapx`
@@ -42,11 +40,10 @@ The value of fapx is our desired result.
 &rarr; The code is a POSIX compliant program in C where the above steps are accomplished in row major approach,
 with the following considerations.
 
-1. The program should execute with the following arguments: <prog_name> n a b p e x1 x2 .. xn
-   2
-   a. Example ./prog_name 4 10 99 5 17 28 67 65 22 19 11 77 89 78 45 40 20 10 90 76
-   i. In the above example, n is 4, a & b are 10 and 99 respectively and p is 5
-   ii. The numbers are the values of x in the 2D array, where the count of such numbers is n^2^, that is 16 in this case.
+1. The program should execute with the following arguments: <prog_name> n a b p e x~1~ x~2~ ... x~n\*n~
+   a. Example ./prog_name 4 10 99 5 17 28 67 65 22 19 11 77 89 78 45 40 20 10 90 76 <br>
+   i. In the above example, n is 4, a & b are 10 and 99 respectively and p is 5 <br>
+   ii. The numbers are the values of x in the 2D array, where the count of such numbers is n^2, that is 16 in this case. <br>
 
 2. The process (say controller/parent/main) executed from <prog_name> will generate the n*n 2D
    array using the command line input. The program should validate the count of x and construct
