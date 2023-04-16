@@ -136,7 +136,7 @@ The design for this request should be scalable for additional operations.
 The server response may be designed as follows. Students can decide on any alternative
 schema.
 
-| Response Code Success: 0 | Custom Error Code:                                                                                            |
+| Response (Success Code: 0 Custom Error Code:) |  Description |
 | ------------------------ | ------------------------------------------------------------------------------------------------------------- |
 | Client Response Seq No   | The counter for the client, for instance a successful registration will have this value as 1 for each client. |
 | Server Response Seq No   | The counter for the server for the number of responses already served.                                        |
@@ -161,7 +161,8 @@ The implementation will be based on the following -
     Differential sizing will complicate you code, but with abundance of caution may be used as
     well.
 
-    MUTEX / RD-WR Lock REQUEST RESPONSE
+   | MUTEX / RD-WR Lock | REQUEST | RESPONSE |
+   | --- | --- | --- |
     Note the server will have n+1 shared memory objects, where n is the number of registered
     clients.
 
