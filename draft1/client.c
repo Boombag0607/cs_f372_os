@@ -7,24 +7,25 @@
 struct shared_block
 {
 	char *client_name;
-	key_t key;
-	int client_res;
+	key_t comm_key;
+	int client_req;
 	int server_res;
 	int action_res;
 };
 
-int comm_channel(key_t key)
+int create_comm_channel_id(key_t key)
 {
 	int shmid;
 	shmid = shmget(key, 1024, 0666 | IPC_CREAT);
-	printf("Key of communication channel is %d", shmid);
+	printf("Key of communication channel is %d\n", shmid);
 	return shmid;
 }
 
 int main()
 {
-	int i;
-	void *shared_memory = NULL;
+	struct shared_block *comm_channel;
+	int choice;
+	void *connect_channel = NULL;
 	char buff[100];
 	int shmid;
 	key_t key = ftok(".", 'b'); // generate key based on current directory and 'a'
@@ -41,27 +42,42 @@ int main()
 	}
 	printf("Key of shared memory is %d\n", shmid);
 
-	shared_memory = shmat(shmid, NULL, 0);
-	if (shared_memory == (void *)-1)
+	connect_channel = shmat(shmid, NULL, 0);
+	if (connect_channel == (void *)-1)
 	{
 		perror("shmat");
 		exit(1);
 	}
-	printf("Process attached at %p\n", shared_memory);
-	if (((char *)shared_memory)[0] != '\0')
+	printf("Process attached at %p\n", connect_channel);
+
+
+	if (((char *)connect_channel)[0] != '\0')
 	{
-		printf("Key read from shared memory: %s\n", (char *)shared_memory);
-		int comm_channel_id = comm_channel((key_t)atoi((char *)shared_memory));
-		void *comm_channel = shmat(shmid, NULL, 0);
+		printf("Key read from connect channel: %s\n", (char *)connect_channel);
+		int comm_channel_id = create_comm_channel_id((key_t)atoi((char *)connect_channel));
+
+		printf("Commmunication channel id = %d\n", comm_channel_id);
+		strcpy((char *)connect_channel, "");
+		comm_channel = (struct shared_block *)shmat(comm_channel_id, NULL, 0);
+		// comm_memory->comm_key = (key_t)atoi((char *)connect_channel);
+		comm_channel = malloc(sizeof(struct shared_block));
+		printf("-------------Send request to server----------------\n");
+		printf("Enter client key and functionality request to server: \n");
+
+		scanf("%d %d", &comm_channel->comm_key, &comm_channel->client_req);
+		// (struct shared_block *)connect_channel = &comm_channel;
 	}
 	else
 	{
-		printf("Enter some data to write to shared memory\n");
+		printf("Enter client name to register:\n");
+		memset(buff, 0, sizeof(buff));
 		read(0, buff, 100);
-		strcpy(shared_memory, buff);
-		printf("You wrote : %s\n", (char *)shared_memory);
+		buff[strlen(buff) - 1] = '\0';
+		strcpy(connect_channel, buff);
+		printf("You wrote : %s\n", (char *)connect_channel);
+		printf("------------------Waiting for server to register client----------------\n");
 
-		shmdt(shared_memory);
+		shmdt(connect_channel);
 	}
 
 	return 0;
