@@ -4,12 +4,15 @@
 #include <sys/shm.h>
 #include <string.h>
 #include <sys/ipc.h>
+#include <pthread.h>
 
 #define MAX_CLIENTS 100
 int client_count = 0;
 int client_ids[MAX_CLIENTS];
 char *client_name[MAX_CLIENTS];
+int comm_keys[MAX_CLIENTS];
 void *connect_channel;
+
 char buff[100];
 long long int connect_id;
 // shared block will contain the client request as well as the server response
@@ -19,14 +22,142 @@ struct shared_block
     key_t comm_key;    // client
     int client_req;    // client
     int server_res;    // server
-    int action_res;    // server
+    int action_res;
+    int input_data[2]; // server
 };
+struct shared_block *comm_channel;
+
+int action_res = 0;
 
 char *int_to_str(int num)
 {
     char *str = malloc(sizeof(char) * 20); // assuming max integer value of 10 digits
     sprintf(str, "%d", num);
     return str;
+}
+
+// void worker_thread_fn(void *arg)
+
+void addition()
+{
+    int a, b;
+    scanf("%d %d", &a, &b);
+    printf("%d\n", a + b);
+    return;
+}
+
+struct worker_thread_args
+{
+    int action_req;
+    int input[2];
+    int action_res;
+};
+
+void *worker_thread_fn(void *args)
+{
+    struct worker_thread_args *t_args = (struct worker_thread_args *)args;
+    // struct worker_args_t *t_args = (struct worker_args_t *)arg;
+    // int connect_shmid = t_args->connect_shmid;
+    // void *shared_memory;
+    // char *filepath = malloc(sizeof(char) * 100);
+    // shared_memory = shmat(connect_shmid, NULL, 0);
+
+    // read file path from shared memory
+    // strcpy(filepath, (char *)shared_memory);
+
+    // printf("Worker thread started for file: %s\n", filepath);
+
+    // TODO: implement worker thread logic here
+    // printf("Choose the function to perform on the file:\n");
+    // printf("1. Arithmetic \n 2. Even or Odd \n 3. Prime or Composite \n 4. Negative or Not \n");
+    // int choice, result = 0, ret;
+    // scanf("%d", &choice);
+    int num = comm_channel->input_data[0];
+    int ret;
+    int flag = 0;
+    switch (comm_channel->client_req)
+    {
+
+    case 11:
+        comm_channel->action_res = comm_channel->input_data[0] + comm_channel->input_data[1];
+        break;
+    case 12:
+        comm_channel->action_res = comm_channel->input_data[0] - comm_channel->input_data[1];
+        break;
+    case 13:
+        comm_channel->action_res = comm_channel->input_data[0] * comm_channel->input_data[1];
+        break;
+    case 14:
+        comm_channel->action_res = comm_channel->input_data[0] / comm_channel->input_data[1];
+        break;
+    case 2:
+        if (num % 2 == 0)
+        {
+            printf("0 - Even\n");
+            ret = 0;
+        }
+        else
+        {
+            printf("1 - Odd\n");
+            ret = 1;
+        }
+        comm_channel->action_res = ret;
+        break;
+
+    case 3:
+
+        for (int i = 2; i <= num / 2; ++i)
+        {
+            // condition for non-prime
+            if (num % i == 0)
+            {
+                flag = 1;
+                break;
+            }
+        }
+
+        if (num == 1)
+        {
+            printf("1 - Not Prime\n");
+            ret = 1;
+        }
+        else
+        {
+            if (flag == 0)
+            {
+                printf("0 - Prime\n");
+                ret = 0;
+            }
+            else
+            {
+                printf("1 - Not Prime\n");
+                ret = 1;
+            }
+        }
+        comm_channel->action_res = ret;
+        break;
+
+    case 4:
+        if (num < 0)
+        {
+            printf("0 - Negative\n");
+            ret = 0;
+        }
+        else
+        {
+            printf("1 - Not Negative\n");
+            ret = 1;
+        }
+        comm_channel->action_res = ret;
+        break;
+    default:
+        printf("Invalid choice\n");
+        break;
+    }
+    printf("Function terminated\n");
+
+    // shmdt(shared_memory);
+    // free(filepath);
 }
 
 // int validate_and_store_client(int client_id)
@@ -93,6 +224,21 @@ int validate_and_store(char *client_name)
     return 0;
 }
 
+void listen_to_comm_channel()
+{
+    for (int i = 0; i < client_count; i++)
+    {
+        comm_channel = shmat(comm_keys[i], NULL, 0);
+        printf("Request to be processed %d\n", comm_channel->client_req);
+        struct worker_thread_args thread_args_ip = {0};
+        pthread_t worker_thread;
+        // comm_channel->client_req
+        pthread_create(&worker_thread, NULL, worker_thread_fn, &thread_args_ip);
+        pthread_join(worker_thread, NULL);
+        printf("Action response:%d\n", comm_channel->action_res);
+    }
+}
+
 int create_comm_channel_id(key_t key)
 {
     int shmid;
@@ -131,13 +277,14 @@ void register_client()
     printf("Data written to connect channel is : %s\n", (char *)connect_channel);
 
     int comm_channel_id = create_comm_channel_id(client_key);
-    struct shared_block *comm_channel = (struct shared_block *)shmat(comm_channel_id, NULL, 0);
+    comm_keys[client_count - 1] = comm_channel_id;
+    // struct shared_block *comm_channel = (struct shared_block *)shmat(comm_channel_id, NULL, 0);
+
     printf("Key of comm channel is %d\n", comm_channel_id);
 }
 
 void create_connect_channel()
 {
-
     key_t key = ftok(".", 'b'); // generate key based on current directory and 'a'
     if (key == -1)
     {
@@ -161,11 +308,26 @@ int main()
     while (1)
     {
         int input = 0;
-        printf("Enter 1: To register the client\nEnter 2: To exit\n---------------\n", NULL);
+        printf("Enter 1: To register the client\nEnter 2: To listen to communication channel\nEnter 3: To call the action function\nEnter 4: To do addition\nEnter 5: To quit\n---------------\n", NULL);
         scanf("%d", &input);
         if (input == 1)
             register_client();
         else if (input == 2)
+            // return 0;
+            listen_to_comm_channel();
+
+        else if (input == 3)
+        {
+            // scanf("%d", &input);
+            struct worker_thread_args thread_args_ip = {0};
+            pthread_t worker_thread;
+            pthread_create(&worker_thread, NULL, worker_thread_fn, &thread_args_ip);
+
+            pthread_join(worker_thread, NULL);
+        }
+        else if (input == 4)
+            addition();
+        else
             return 0;
     }
 }
