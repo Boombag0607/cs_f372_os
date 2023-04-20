@@ -45,11 +45,11 @@ void register_client()
 
 		int result = 0, ret;
 		printf("Which function do you want to exectute?\n");
-		printf(" 1. Arithmetic \n 2. Even or Odd \n 3. Prime or Composite \n 4. Negative or Not \n");
+		printf(" 1. Arithmetic \n 2. Even or Odd \n 3. Prime or Composite \n 4. Negative or Not \n 5. Unregister \n");
 		printf("------------------------------------------------------------------\n");
 		printf("Your choice :  ");
 		scanf("%d", &func_choice);
-		
+
 		printf("------------------------------------------------------------------\n");
 
 		req_no = req_no * 10 + func_choice;
@@ -91,6 +91,9 @@ void register_client()
 			scanf("%d", &a);
 			printf("------------------------------------------------------------------\n");
 			comm_channel->input_data[0] = a;
+			comm_channel->client_req = req_no;
+			break;
+		case 5:
 			comm_channel->client_req = req_no;
 			break;
 		default:
@@ -170,7 +173,7 @@ void connect_to_server()
 		perror("ftok");
 		exit(1);
 	}
-	shmid = shmget(key, 1024, 0666 | IPC_CREAT);
+	shmid = shmget(key, 256, 0666 | IPC_CREAT);
 	if (shmid == -1)
 	{
 		perror("shmget");
@@ -196,7 +199,7 @@ int main()
 
 	while (1)
 	{
-		printf("Enter 1: To register client\nEnter 2: To send request to server for the a registered client\nEnter 3: To see function response\nEnter 4: To unregister the client\nEnter anything else: To quit the client interface\n"); // menu
+		printf("Enter 1: To register client\nEnter 2: To send request to server for the a registered client/ To uresgister a client\nEnter 3: To see function response\nEnter anything else: To quit the client interface\n"); // menu
 		printf("------------------------------------------------------------------\n");
 		printf("Your choice : ");
 		scanf("%d", &choice);
@@ -212,21 +215,6 @@ int main()
 		case 3:
 			get_result();
 			break;
-		case 4:
-			if (shmdt(connect_channel) == -1)
-			{
-				printf("No Client to unregister\n");
-				printf("------------------------------------------------------------------\n");
-				break;
-			}
-			else
-			{
-				shmdt(connect_channel);
-
-				printf("Client unregistered\n");
-				printf("------------------------------------------------------------------\n");
-				break;
-			}
 		default:
 			printf("Invalid choice\n");
 			printf("------------------------------------------------------------------\n");

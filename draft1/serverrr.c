@@ -9,10 +9,12 @@
 #define MAX_CLIENTS 100
 int client_count = 0;
 int client_ids[MAX_CLIENTS];
-char *client_name[MAX_CLIENTS];
+// char *client_name[MAX_CLIENTS];
 int comm_keys[MAX_CLIENTS];
 void *connect_channel;
+int comm_channel_id;
 pthread_mutex_t lock;
+int register_id;
 
 char buff[100];
 long long int connect_id;
@@ -97,7 +99,7 @@ void *worker_thread_fn(void *args)
     case 14:
         comm_channel->action_res = comm_channel->input_data[0] / comm_channel->input_data[1];
         break;
-    
+
     case 2:
         if (num % 2 == 0)
         {
@@ -157,6 +159,12 @@ void *worker_thread_fn(void *args)
             ret = 1;
         }
         comm_channel->action_res = ret;
+        break;
+    case 5:
+        shmctl(comm_channel_id, IPC_RMID, NULL);
+        printf("Client unregistered.\n");
+        client_ids[register_id] = -1;
+        printf("%d\n",register_id);
         break;
     default:
         printf("Invalid choice\n");
@@ -245,6 +253,8 @@ void listen_to_comm_channel()
     for (int i = 0; i < client_count; i++)
     {
         comm_channel = shmat(comm_keys[i], NULL, 0);
+        comm_channel_id = comm_keys[i];
+        register_id = i;
         printf("Request to be processed : %d\n", comm_channel->client_req);
         printf("------------------------------------------------------------------\n");
         struct worker_thread_args thread_args_ip = {0};
@@ -315,7 +325,7 @@ void create_connect_channel()
         exit(1);
     }
 
-    connect_id = shmget(key, 1024, 0666 | IPC_CREAT);
+    connect_id = shmget(key, 256, 0666 | IPC_CREAT);
     if (connect_id == -1)
     {
         perror("shmget");
