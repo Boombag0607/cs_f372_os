@@ -164,7 +164,8 @@ void *worker_thread_fn(void *args)
         shmctl(comm_channel_id, IPC_RMID, NULL);
         printf("Client unregistered.\n");
         client_ids[register_id] = -1;
-        printf("%d\n",register_id);
+        printf("%d\n", register_id);
+        comm_keys[register_id] = -1;
         break;
     default:
         printf("Invalid choice\n");
@@ -252,7 +253,16 @@ void listen_to_comm_channel()
 {
     for (int i = 0; i < client_count; i++)
     {
+        if (comm_keys[i] == -1) {
+            continue;
+        }
         comm_channel = shmat(comm_keys[i], NULL, 0);
+
+        if (comm_channel == (void *)-1)
+        {
+            printf("shmat failed\n");
+            exit(EXIT_FAILURE);
+        }
         comm_channel_id = comm_keys[i];
         register_id = i;
         printf("Request to be processed : %d\n", comm_channel->client_req);
@@ -325,7 +335,7 @@ void create_connect_channel()
         exit(1);
     }
 
-    connect_id = shmget(key, 256, 0666 | IPC_CREAT);
+    connect_id = shmget(1235, 256, 0666 | IPC_CREAT);
     if (connect_id == -1)
     {
         perror("shmget");
