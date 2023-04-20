@@ -19,6 +19,7 @@ struct shared_block *comm_channel;
 void *connect_channel = NULL;
 char buff[100];
 int shmid;
+int func_choice;
 
 int create_comm_channel_id(key_t key)
 {
@@ -42,29 +43,31 @@ void register_client()
 		printf("--------------------Send request to server------------------------\n");
 		printf("------------------------------------------------------------------\n");
 
+		int result = 0, ret;
 		printf("Which function do you want to exectute?\n");
 		printf(" 1. Arithmetic \n 2. Even or Odd \n 3. Prime or Composite \n 4. Negative or Not \n");
 		printf("------------------------------------------------------------------\n");
-		printf("You choice :  ");
-		int choice, result = 0, ret;
-		scanf("%d", &choice);
+		printf("Your choice :  ");
+		scanf("%d", &func_choice);
+		
 		printf("------------------------------------------------------------------\n");
 
-		req_no = req_no * 10 + choice;
-		switch (choice)
+		req_no = req_no * 10 + func_choice;
+		switch (func_choice)
 		{
 		case 1:
 			printf("Enter the operation to perform: \n 1. Addition \n 2. Subtraction \n 3. Multiplication \n 4. Division \n");
 			int operation;
-			scanf("%d", &operation);
 			printf("------------------------------------------------------------------\n");
 			printf("You choice :  ");
+			scanf("%d", &operation);
 			printf("------------------------------------------------------------------\n");
 
 			req_no = req_no * 10 + operation;
 			comm_channel->client_req = req_no;
 			int a, b;
 			printf("Enter the two numbers: \n");
+			printf("------------------------------------------------------------------\n");
 			scanf("%d %d", &a, &b);
 			comm_channel->input_data[0] = a;
 			comm_channel->input_data[1] = b;
@@ -116,7 +119,46 @@ void register_client()
 
 void get_result()
 {
-	printf("Result received from server: %d\n", comm_channel->action_res);
+	switch (func_choice)
+	{
+	case 1:
+		printf("Result received from server: %d\n", comm_channel->action_res);
+		break;
+	case 2:
+		if (comm_channel->action_res == 0)
+		{
+			printf("Result received from server: Even\n");
+		}
+		else if (comm_channel->action_res == 1)
+		{
+			printf("Result received from server: Odd\n");
+		}
+		break;
+	case 3:
+		if (comm_channel->action_res == 0)
+		{
+			printf("Result received from server: Prime\n");
+		}
+		else if (comm_channel->action_res == 1)
+		{
+			printf("Result received from server: Composite\n");
+		}
+		break;
+	case 4:
+		if (comm_channel->action_res == 0)
+		{
+			printf("Result received from server: Negative\n");
+		}
+		else if (comm_channel->action_res == 1)
+		{
+			printf("Result received from server: Not Negative\n");
+		}
+		break;
+	default:
+		printf("Invalid choice!");
+		break;
+	}
+	// printf("Result received from server: %d\n", comm_channel->action_res);
 	printf("------------------------------------------------------------------\n");
 }
 
