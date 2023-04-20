@@ -17,7 +17,16 @@ struct shared_block
 
 struct shared_block *comm_channel;
 
-void *connect_channel = NULL;
+struct connect_channel_block
+{
+	pthread_rwlock_t rwlock;
+	int comm_key;
+	char client_name[100];
+};
+
+// void *connect_channel = NULL;
+struct connect_channel_block *connect_channel;
+
 char buff[100];
 int shmid;
 int func_choice;
@@ -33,13 +42,10 @@ int create_comm_channel_id(key_t key)
 
 void register_client()
 {
-
+	// pthread_rwlock_wrlock(&(connect_channel->rwlock));
 	printf("Enter client name to register:\n");
-	memset(buff, 0, sizeof(buff));
-	read(0, buff, 100);
-	buff[strlen(buff) - 1] = '\0';
-	strcpy(connect_channel, buff);
-	printf("You wrote : %s\n", (char *)connect_channel);
+	scanf("%s", connect_channel->client_name);
+	printf("You wrote : %s\n", connect_channel->client_name);
 	printf("------------------------------------------------------------------\n");
 	printf("------------Waiting for server to register client-----------------\n");
 	sleep(1);
@@ -47,14 +53,14 @@ void register_client()
 
 void send_request()
 {
-	if (((char *)connect_channel)[0] != '\0')
+	if (connect_channel->comm_key != 0)
 	{
-		printf("Key read from connect channel: %s\n", (char *)connect_channel);
-		comm_channel_id = create_comm_channel_id((key_t)atoi((char *)connect_channel));
+		printf("Key read from connect channel: %d\n", connect_channel->comm_key);
+		comm_channel_id = create_comm_channel_id((key_t)connect_channel->comm_key);
 		printf("Commmunication channel id = %d\n", comm_channel_id);
-		strcpy((char *)connect_channel, "");
+		connect_channel->comm_key = 0;
 	}
-	comm_channel = shmat(comm_channel_id, NULL, 0);
+	comm_channel = (struct shared_block *)shmat(comm_channel_id, NULL, 0);
 	int req_no = 0;
 	printf("--------------------Send request to server------------------------\n");
 	printf("------------------------------------------------------------------\n");
@@ -181,8 +187,8 @@ void connect_to_server()
 	printf("Key of shared memory (connect channel) is : %d\n", shmid);
 	printf("------------------------------------------------------------------\n");
 
-	connect_channel = shmat(shmid, NULL, 0);
-	if (connect_channel == (void *)-1)
+	connect_channel = (struct connect_channel_block *)shmat(shmid, NULL, 0);
+	if (connect_channel == (struct connect_channel_block *)-1)
 	{
 		perror("shmat");
 		exit(1);
@@ -195,10 +201,11 @@ int main()
 {
 	connect_to_server();
 	int choice;
+	pthread_rwlock_init(&(connect_channel->rwlock), NULL);
 
 	while (1)
 	{
-		printf("Enter 1: To register client\nEnter 2: To send request to server for a registered client\nEnter 3: To see function response\nEnter 4: To unregister the client\nEnter anything else: To quit the client interface\n"); // menu
+		printf("Enter 1: To register client\nEnter 2: To send request to server for a registered client\nEnter 3: To see function response\nEnter anything else: To quit the client interface\n"); // menu
 		printf("------------------------------------------------------------------\n");
 		printf("Your choice : ");
 		scanf("%d", &choice);
@@ -214,21 +221,6 @@ int main()
 		case 3:
 			get_result();
 			break;
-		case 4:
-			if (shmdt(connect_channel) == -1)
-			{
-				printf("No Client to unregister\n");
-				printf("------------------------------------------------------------------\n");
-				break;
-			}
-			else
-			{
-				shmdt(connect_channel);
-
-				printf("Client unregistered\n");
-				printf("------------------------------------------------------------------\n");
-				break;
-			}
 		default:
 			printf("Invalid choice\n");
 			printf("------------------------------------------------------------------\n");

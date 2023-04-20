@@ -11,7 +11,7 @@ int client_count = 0;
 int client_ids[MAX_CLIENTS];
 // char *client_name[MAX_CLIENTS];
 int comm_keys[MAX_CLIENTS];
-void *connect_channel;
+// void *connect_channel;
 int comm_channel_id;
 pthread_mutex_t lock;
 int register_id;
@@ -28,7 +28,15 @@ struct shared_block
     int action_res;
     int input_data[2]; // server
 };
+
+struct connect_channel_block {
+	pthread_rwlock_t rwlock;
+	int client_key;
+	char client_name[100];
+};
+
 struct shared_block *comm_channel;
+struct connect_channel_block *connect_channel;
 
 int action_res = 0;
 
@@ -40,14 +48,6 @@ char *int_to_str(int num)
 }
 
 // void worker_thread_fn(void *arg)
-
-void addition()
-{
-    int a, b;
-    scanf("%d %d", &a, &b);
-    printf("%d\n", a + b);
-    return;
-}
 
 struct worker_thread_args
 {
@@ -286,36 +286,35 @@ int create_comm_channel_id(key_t key)
 
 void register_client()
 {
-    connect_channel = shmat(connect_id, NULL, 0); // process attached to shared memory segment
-
-    if (((char *)connect_channel)[0] == '\0')
+    connect_channel = (struct connect_channel_block *)shmat(connect_id, NULL, 0); // process attached to shared memory segment
+    if ((connect_channel->client_name)[0] == '\0')
     {
         printf("No client to register\n", NULL);
         printf("------------------------------------------------------------------\n");
         return;
     }
     printf("Client Info : \n");
-    printf("Name of the client is : %s\n", (char *)connect_channel);
-    char *client_name = (char *)connect_channel;
+    printf("Name of the client is : %s\n", connect_channel->client_name);
+    char *client_name = connect_channel->client_name;
     int client_id = generate_id(client_name);
     int client_flg = validate_and_store(client_name);
     if (client_flg == 1)
     {
         printf("Client already registered\n", NULL);
         printf("------------------------------------------------------------------\n");
-        strcpy((char *)connect_channel, "");
+        strcpy(connect_channel->client_name, "");
         return;
     }
     int client_key = ftok(".", client_id);
     // printf("----------(%d)---------\n", ftok(".", 1));
-    char *client_key_str = int_to_str(client_key);
-    strcpy(connect_channel, client_key_str);
+    // char *client_key_str = int_to_str(client_key);
+    connect_channel->client_key = client_key;
     // key_t key = generate_key((char *)shared_memory);
     // key_t key = ftok("Ananya", 'a');
 
     printf("Client key generated is : %d\n", client_key);
     printf("------------------------------------------------------------------\n");
-    printf("Data written to connect channel is : %s\n", (char *)connect_channel);
+    printf("Data written to connect channel is : %d\n", connect_channel->client_key);
     printf("------------------------------------------------------------------\n");
 
     int comm_channel_id = create_comm_channel_id(client_key);
