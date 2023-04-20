@@ -12,6 +12,7 @@ int client_ids[MAX_CLIENTS];
 char *client_name[MAX_CLIENTS];
 int comm_keys[MAX_CLIENTS];
 void *connect_channel;
+pthread_mutex_t lock;
 
 char buff[100];
 long long int connect_id;
@@ -56,6 +57,12 @@ struct worker_thread_args
 void *worker_thread_fn(void *args)
 {
     struct worker_thread_args *t_args = (struct worker_thread_args *)args;
+    pthread_mutex_lock(&lock);
+    printf("Thread Started, Mutex Lock Activated\n");
+    printf("------------------------------------------------------------------\n");
+
+    printf("Action Initialized\n");
+    printf("------------------------------------------------------------------\n");
     // struct worker_args_t *t_args = (struct worker_args_t *)arg;
     // int connect_shmid = t_args->connect_shmid;
     // void *shared_memory;
@@ -154,7 +161,15 @@ void *worker_thread_fn(void *args)
         printf("Invalid choice\n");
         break;
     }
-    printf("Function terminated\n");
+
+    printf("------------------------------------------------------------------\n");
+    printf("Action terminated\n");
+    printf("------------------------------------------------------------------\n");
+
+    pthread_mutex_unlock(&lock);
+    printf("Thread Terminated, Mutex Lock Deactivated\n");
+    printf("------------------------------------------------------------------\n");
+    pthread_exit(NULL);
 
     // shmdt(shared_memory);
     // free(filepath);
@@ -229,20 +244,22 @@ void listen_to_comm_channel()
     for (int i = 0; i < client_count; i++)
     {
         comm_channel = shmat(comm_keys[i], NULL, 0);
-        printf("Request to be processed %d\n", comm_channel->client_req);
+        printf("Request to be processed : %d\n", comm_channel->client_req);
+        printf("------------------------------------------------------------------\n");
         struct worker_thread_args thread_args_ip = {0};
         pthread_t worker_thread;
         // comm_channel->client_req
         pthread_create(&worker_thread, NULL, worker_thread_fn, &thread_args_ip);
         pthread_join(worker_thread, NULL);
-        printf("Action response:%d\n", comm_channel->action_res);
+        printf("Action response : %d\n", comm_channel->action_res);
+        printf("------------------------------------------------------------------\n");
     }
 }
 
 int create_comm_channel_id(key_t key)
 {
     int shmid;
-    shmid = shmget(key, 1024, 0666 | IPC_CREAT);
+    shmid = shmget(key, sizeof(struct shared_block), 0666 | IPC_CREAT);
     return shmid;
 }
 
@@ -253,34 +270,39 @@ void register_client()
     if (((char *)connect_channel)[0] == '\0')
     {
         printf("No client to register\n", NULL);
+        printf("------------------------------------------------------------------\n");
         return;
     }
-    printf("Name of the client is %s\n", (char *)connect_channel);
+    printf("Client Info : \n");
+    printf("Name of the client is : %s\n", (char *)connect_channel);
     char *client_name = (char *)connect_channel;
     int client_id = generate_id(client_name);
     int client_flg = validate_and_store(client_name);
     if (client_flg == 1)
     {
         printf("Client already registered\n", NULL);
+        printf("------------------------------------------------------------------\n");
         strcpy((char *)connect_channel, "");
         return;
     }
     int client_key = ftok(".", client_id);
-    printf("----------(%d)---------\n", ftok(".", 1));
+    // printf("----------(%d)---------\n", ftok(".", 1));
     char *client_key_str = int_to_str(client_key);
     strcpy(connect_channel, client_key_str);
     // key_t key = generate_key((char *)shared_memory);
     // key_t key = ftok("Ananya", 'a');
 
-    // while (1) {
-    printf("Client key generated is %d\n", client_key);
+    printf("Client key generated is : %d\n", client_key);
+    printf("------------------------------------------------------------------\n");
     printf("Data written to connect channel is : %s\n", (char *)connect_channel);
+    printf("------------------------------------------------------------------\n");
 
     int comm_channel_id = create_comm_channel_id(client_key);
     comm_keys[client_count - 1] = comm_channel_id;
     // struct shared_block *comm_channel = (struct shared_block *)shmat(comm_channel_id, NULL, 0);
 
-    printf("Key of comm channel is %d\n", comm_channel_id);
+    printf("Key of commmunication channel is : %d\n", comm_channel_id);
+    printf("------------------------------------------------------------------\n");
 }
 
 void create_connect_channel()
@@ -298,35 +320,28 @@ void create_connect_channel()
         perror("shmget");
         exit(1);
     }
-    printf("Key of shared memory is %lld\n", connect_id);
+    printf("Key of shared memory is (connect channel) : %lld\n", connect_id);
+    printf("------------------------------------------------------------------\n");
 }
 
 int main()
 {
     // int i;
+    pthread_mutex_init(&lock, NULL);
     create_connect_channel();
     while (1)
     {
         int input = 0;
-        printf("Enter 1: To register the client\nEnter 2: To listen to communication channel\nEnter 3: To call the action function\nEnter 4: To do addition\nEnter 5: To quit\n---------------\n", NULL);
+        printf("Enter 1: To register the client\nEnter 2: To listen to communication channel\nEnter anything else: To quit\n", NULL);
+        printf("Your choice : ");
+
         scanf("%d", &input);
+        printf("------------------------------------------------------------------\n");
         if (input == 1)
             register_client();
         else if (input == 2)
             // return 0;
             listen_to_comm_channel();
-
-        else if (input == 3)
-        {
-            // scanf("%d", &input);
-            struct worker_thread_args thread_args_ip = {0};
-            pthread_t worker_thread;
-            pthread_create(&worker_thread, NULL, worker_thread_fn, &thread_args_ip);
-
-            pthread_join(worker_thread, NULL);
-        }
-        else if (input == 4)
-            addition();
         else
             return 0;
     }
