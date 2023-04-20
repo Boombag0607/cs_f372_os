@@ -97,6 +97,7 @@ void *worker_thread_fn(void *args)
     case 14:
         comm_channel->action_res = comm_channel->input_data[0] / comm_channel->input_data[1];
         break;
+    
     case 2:
         if (num % 2 == 0)
         {
@@ -332,7 +333,8 @@ int main()
     while (1)
     {
         int input = 0;
-        printf("Enter 1: To register the client\nEnter 2: To listen to communication channel\nEnter anything else: To quit\n", NULL);
+        printf("Enter 1: To register the client\nEnter 2: To listen to communication channel\nEnter anything else: To quit the server interface\n", NULL);
+        printf("------------------------------------------------------------------\n");
         printf("Your choice : ");
 
         scanf("%d", &input);

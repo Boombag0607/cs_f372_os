@@ -107,7 +107,7 @@ void register_client()
 		strcpy(connect_channel, buff);
 		printf("You wrote : %s\n", (char *)connect_channel);
 		printf("------------------------------------------------------------------\n");
-		printf("------------------Waiting for server to register client----------------\n");
+		printf("------------Waiting for server to register client-----------------\n");
 		sleep(1);
 
 		// shmdt(connect_channel);
@@ -136,7 +136,7 @@ void connect_to_server()
 	}
 	printf("Key of shared memory (connect channel) is : %d\n", shmid);
 	printf("------------------------------------------------------------------\n");
-	
+
 	connect_channel = shmat(shmid, NULL, 0);
 	if (connect_channel == (void *)-1)
 	{
@@ -154,7 +154,8 @@ int main()
 
 	while (1)
 	{
-		printf("Enter 1 to register client\nEnter 2 to see function response\n"); // menu
+		printf("Enter 1: To register client\nEnter 2: To send request to server for the a registered client\nEnter 3: To see function response\nEnter 4: To unregister the client\nEnter anything else: To quit the client interface\n"); // menu
+		printf("------------------------------------------------------------------\n");
 		printf("Your choice : ");
 		scanf("%d", &choice);
 		printf("------------------------------------------------------------------\n");
@@ -164,12 +165,30 @@ int main()
 			register_client();
 			break;
 		case 2:
+			register_client();
+			break;
+		case 3:
 			get_result();
 			break;
+		case 4:
+			if (shmdt(connect_channel) == -1)
+			{
+				printf("No Client to unregister\n");
+				printf("------------------------------------------------------------------\n");
+				break;
+			}
+			else
+			{
+				shmdt(connect_channel);
+
+				printf("Client unregistered\n");
+				printf("------------------------------------------------------------------\n");
+				break;
+			}
 		default:
 			printf("Invalid choice\n");
 			printf("------------------------------------------------------------------\n");
-			break;
+			return 0;
 		}
 	}
 
