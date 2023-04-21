@@ -13,7 +13,7 @@ int client_ids[MAX_CLIENTS];
 int comm_keys[MAX_CLIENTS];
 // void *connect_channel;
 int comm_channel_id;
-pthread_mutex_t lock;
+// pthread_mutex_t lock;
 int register_id;
 
 char buff[100];
@@ -27,12 +27,15 @@ struct shared_block
     int server_res;    // server
     int action_res;
     int input_data[2]; // server
+    // pthread_mutex_t mutex;
 };
 
-struct connect_channel_block {
-	pthread_rwlock_t rwlock;
-	int client_key;
-	char client_name[100];
+struct connect_channel_block
+{
+    pthread_rwlock_t rwlock;
+    int client_key;
+    char client_name[100];
+    int req_status;
 };
 
 struct shared_block *comm_channel;
@@ -59,7 +62,7 @@ struct worker_thread_args
 void *worker_thread_fn(void *args)
 {
     struct worker_thread_args *t_args = (struct worker_thread_args *)args;
-    pthread_mutex_lock(&lock);
+    // pthread_mutex_lock(&lock);
     printf("Thread Started, Mutex Lock Activated\n");
     printf("------------------------------------------------------------------\n");
 
@@ -176,7 +179,7 @@ void *worker_thread_fn(void *args)
     printf("Action terminated\n");
     printf("------------------------------------------------------------------\n");
 
-    pthread_mutex_unlock(&lock);
+    // pthread_mutex_unlock(&lock);
     printf("Thread Terminated, Mutex Lock Deactivated\n");
     printf("------------------------------------------------------------------\n");
     pthread_exit(NULL);
@@ -226,7 +229,8 @@ long long int generate_id(char *str)
     }
     return key;
 }
-
+int a = 0;
+int b = 0;
 int validate_and_store(char *client_name)
 {
     int client_id = generate_id(client_name);
@@ -243,17 +247,22 @@ int validate_and_store(char *client_name)
         //     return 1;
     }
     // printf("string of client key : %s", client_key_str);
-
+    a++;
+    b++;
     client_ids[client_count] = client_id;
+
     client_count++;
     return 0;
 }
 
 void listen_to_comm_channel()
 {
+    pthread_mutex_t *mutex = 0;
+    pthread_cond_t *cond = 0;
     for (int i = 0; i < client_count; i++)
     {
-        if (comm_keys[i] == -1) {
+        if (comm_keys[i] == -1)
+        {
             continue;
         }
         comm_channel = shmat(comm_keys[i], NULL, 0);
@@ -265,6 +274,12 @@ void listen_to_comm_channel()
         }
         comm_channel_id = comm_keys[i];
         register_id = i;
+        if (comm_channel->client_req == 0)
+        {
+            printf("Bruh\n");
+            continue;
+        }
+
         printf("Request to be processed : %d\n", comm_channel->client_req);
         printf("------------------------------------------------------------------\n");
         struct worker_thread_args thread_args_ip = {0};
@@ -272,6 +287,8 @@ void listen_to_comm_channel()
         // comm_channel->client_req
         pthread_create(&worker_thread, NULL, worker_thread_fn, &thread_args_ip);
         pthread_join(worker_thread, NULL);
+        connect_channel->req_status = 0;
+        comm_channel->client_req = 0;
         printf("Action response : %d\n", comm_channel->action_res);
         printf("------------------------------------------------------------------\n");
     }
@@ -286,11 +303,9 @@ int create_comm_channel_id(key_t key)
 
 void register_client()
 {
-    connect_channel = (struct connect_channel_block *)shmat(connect_id, NULL, 0); // process attached to shared memory segment
     if ((connect_channel->client_name)[0] == '\0')
     {
-        printf("No client to register\n", NULL);
-        printf("------------------------------------------------------------------\n");
+        // printf("------------------------------------------------------------------\n");
         return;
     }
     printf("Client Info : \n");
@@ -311,7 +326,7 @@ void register_client()
     connect_channel->client_key = client_key;
     // key_t key = generate_key((char *)shared_memory);
     // key_t key = ftok("Ananya", 'a');
-
+    connect_channel->client_name[0] = '\0';
     printf("Client key generated is : %d\n", client_key);
     printf("------------------------------------------------------------------\n");
     printf("Data written to connect channel is : %d\n", connect_channel->client_key);
@@ -327,6 +342,7 @@ void register_client()
 
 void create_connect_channel()
 {
+    printf("Entered create_connect_channel\n");
     key_t key = ftok(".", 'b'); // generate key based on current directory and 'a'
     if (key == -1)
     {
@@ -342,28 +358,41 @@ void create_connect_channel()
     }
     printf("Key of shared memory is (connect channel) : %lld\n", connect_id);
     printf("------------------------------------------------------------------\n");
+    connect_channel = (struct connect_channel_block *)shmat(connect_id, NULL, 0); // process attached to shared memory segment
 }
 
 int main()
 {
     // int i;
-    pthread_mutex_init(&lock, NULL);
+    // pthread_mutex_init(&lock, NULL);
     create_connect_channel();
     while (1)
     {
-        int input = 0;
-        printf("Enter 1: To register the client\nEnter 2: To listen to communication channel\nEnter anything else: To quit the server interface\n", NULL);
-        printf("------------------------------------------------------------------\n");
-        printf("Your choice : ");
-
-        scanf("%d", &input);
-        printf("------------------------------------------------------------------\n");
-        if (input == 1)
-            register_client();
-        else if (input == 2)
-            // return 0;
+        register_client();
+        if (connect_channel->req_status == 1)
             listen_to_comm_channel();
-        else
-            return 0;
     }
+    // while (1)
+    // {
+
+    //     // int input = 0;
+    //     // printf("Enter 1: To register the client\nEnter 2: To listen to communication channel\nEnter anything else: To quit the server interface\n", NULL);
+    //     // printf("------------------------------------------------------------------\n");
+    //     // printf("Your choice : ");
+
+    //     // scanf("%d", &input);
+    //     // printf("------------------------------------------------------------------\n");
+    //     // if (input == 1)
+
+    //     register_client();
+    //     //  else if (input == 2)
+    //     //      // return 0;
+    //     // listen_to_comm_channel();
+    //     //  else
+    //     //      return 0;
+    //     //  register_client();
+    //     //  sleep(1);
+    //     //  if(comm_channel->client_req == 0)
+    //     //  listen_to_comm_channel();    }
+    // }
 }

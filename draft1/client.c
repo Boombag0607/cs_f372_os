@@ -22,6 +22,7 @@ struct connect_channel_block
 	pthread_rwlock_t rwlock;
 	int comm_key;
 	char client_name[100];
+	int req_status;
 };
 
 // void *connect_channel = NULL;
@@ -48,7 +49,8 @@ void register_client()
 	printf("You wrote : %s\n", connect_channel->client_name);
 	printf("------------------------------------------------------------------\n");
 	printf("------------Waiting for server to register client-----------------\n");
-	sleep(1);
+	sleep(2);
+	// pthread_rwlock_unlock(&(connect_channel->rwlock));
 }
 
 void send_request()
@@ -123,6 +125,7 @@ void send_request()
 		printf("------------------------------------------------------------------\n");
 		break;
 	}
+	connect_channel->req_status = 1;
 }
 
 void get_result()
@@ -202,7 +205,7 @@ int main()
 	connect_to_server();
 	int choice;
 	pthread_rwlock_init(&(connect_channel->rwlock), NULL);
-
+	// pthread_rwlock_unlock(&(connect_channel->rwlock));
 	while (1)
 	{
 		printf("Enter 1: To register client\nEnter 2: To send request to server for a registered client\nEnter 3: To see function response\nEnter anything else: To quit the client interface\n"); // menu
