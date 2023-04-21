@@ -55,14 +55,15 @@ void register_client()
 
 void send_request()
 {
-	if (connect_channel->comm_key != 0)
+	if (comm_channel->comm_key == 0)
 	{
-		printf("Key read from connect channel: %d\n", connect_channel->comm_key);
-		comm_channel_id = create_comm_channel_id((key_t)connect_channel->comm_key);
-		printf("Commmunication channel id = %d\n", comm_channel_id);
-		connect_channel->comm_key = 0;
+		printf("Communication channel not yet made!\n");
+		return;
+		// comm_channel_id = create_comm_channel_id((key_t)connect_channel->comm_key);
+		// printf("Commmunication channel id = %d\n", comm_channel_id);
+		// connect_channel->comm_key = 0;
 	}
-	comm_channel = (struct shared_block *)shmat(comm_channel_id, NULL, 0);
+
 	int req_no = 0;
 	printf("--------------------Send request to server------------------------\n");
 	printf("------------------------------------------------------------------\n");
@@ -165,6 +166,9 @@ void get_result()
 			printf("Result received from server: Not Negative\n");
 		}
 		break;
+	case 5:
+		printf("Unregistered from server!\n");
+		break;
 	default:
 		printf("Invalid choice!");
 		break;
@@ -175,12 +179,12 @@ void get_result()
 
 void connect_to_server()
 {
-	key_t key = ftok(".", 'b'); // generate key based on current directory and 'a'
-	if (key == -1)
-	{
-		perror("ftok");
-		exit(1);
-	}
+	// key_t key = ftok(".", 'b'); // generate key based on current directory and 'a'
+	// if (key == -1)
+	// {
+	// 	perror("ftok");
+	// 	exit(1);
+	// }
 	shmid = shmget(1235, 256, 0666 | IPC_CREAT);
 	if (shmid == -1)
 	{
@@ -200,6 +204,16 @@ void connect_to_server()
 	printf("------------------------------------------------------------------\n");
 }
 
+void connect_comm_channel()
+{
+	printf("Key read from connect channel: %d\n", connect_channel->comm_key);
+	comm_channel_id = create_comm_channel_id((key_t)connect_channel->comm_key);
+	printf("Commmunication channel id = %d\n", comm_channel_id);
+	comm_channel = (struct shared_block *)shmat(comm_channel_id, NULL, 0);
+	comm_channel->comm_key = connect_channel->comm_key;
+	connect_channel->comm_key = 0;
+}
+
 int main()
 {
 	connect_to_server();
@@ -208,7 +222,7 @@ int main()
 	// pthread_rwlock_unlock(&(connect_channel->rwlock));
 	while (1)
 	{
-		printf("Enter 1: To register client\nEnter 2: To send request to server for a registered client\nEnter 3: To see function response\nEnter anything else: To quit the client interface\n"); // menu
+		printf("Enter 1: To register client\nEnter 2: To send request to server for a registered client\nEnter anything else: To quit the client interface\n"); // menu
 		printf("------------------------------------------------------------------\n");
 		printf("Your choice : ");
 		scanf("%d", &choice);
@@ -217,15 +231,18 @@ int main()
 		{
 		case 1:
 			register_client();
+			while (connect_channel->comm_key == 0)
+			{
+			}
+			connect_comm_channel();
 			break;
 		case 2:
 			send_request();
-			break;
-		case 3:
+			sleep(1);
 			get_result();
 			break;
 		default:
-			printf("Invalid choice\n");
+			printf("Quitting\n");
 			printf("------------------------------------------------------------------\n");
 			return 0;
 		}

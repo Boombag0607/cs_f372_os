@@ -257,8 +257,6 @@ int validate_and_store(char *client_name)
 
 void listen_to_comm_channel()
 {
-    pthread_mutex_t *mutex = 0;
-    pthread_cond_t *cond = 0;
     for (int i = 0; i < client_count; i++)
     {
         if (comm_keys[i] == -1)
@@ -276,7 +274,7 @@ void listen_to_comm_channel()
         register_id = i;
         if (comm_channel->client_req == 0)
         {
-            printf("Bruh\n");
+            // printf("Bruh\n");
             continue;
         }
 
@@ -342,13 +340,13 @@ void register_client()
 
 void create_connect_channel()
 {
-    printf("Entered create_connect_channel\n");
-    key_t key = ftok(".", 'b'); // generate key based on current directory and 'a'
-    if (key == -1)
-    {
-        perror("ftok");
-        exit(1);
-    }
+    // printf("Entered create_connect_channel\n");
+    // key_t key = ftok(".", 'b'); // generate key based on current directory and 'a'
+    // if (key == -1)
+    // {
+    //     perror("ftok");
+    //     exit(1);
+    // }
 
     connect_id = shmget(1235, 256, 0666 | IPC_CREAT);
     if (connect_id == -1)
