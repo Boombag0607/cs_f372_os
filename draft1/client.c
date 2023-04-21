@@ -1,3 +1,15 @@
+/*
+Group - 12
+Assignment 2
+Members:
+1. Raj Jagtap - 2020AAPS2113H
+2. Ananya Gautam - 2020AAPS2096H
+3. Jinil Bhavin Shah - 2020AAPS1750H
+3. Shreyaan Sharma - 2020A3PS1139H
+5. Shikhar Sachan - 2020A3PS2140H
+6. Kshtij Agarwal - 2020A3PS2209H
+7. Tanisha Upadhyay 2020AAPS0351H
+*/
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
@@ -25,7 +37,6 @@ struct connect_channel_block
 	int req_status;
 };
 
-// void *connect_channel = NULL;
 struct connect_channel_block *connect_channel;
 
 char buff[100];
@@ -43,14 +54,15 @@ int create_comm_channel_id(key_t key)
 
 void register_client()
 {
-	// pthread_rwlock_wrlock(&(connect_channel->rwlock));
+	// Read write lock is implemented
+	pthread_rwlock_wrlock(&(connect_channel->rwlock)); // write lock activated
 	printf("Enter client name to register:\n");
 	scanf("%s", connect_channel->client_name);
 	printf("You wrote : %s\n", connect_channel->client_name);
 	printf("------------------------------------------------------------------\n");
 	printf("------------Waiting for server to register client-----------------\n");
 	sleep(2);
-	// pthread_rwlock_unlock(&(connect_channel->rwlock));
+	pthread_rwlock_unlock(&(connect_channel->rwlock)); // write lock deactivated
 }
 
 void send_request()
@@ -59,9 +71,6 @@ void send_request()
 	{
 		printf("Communication channel not yet made!\n");
 		return;
-		// comm_channel_id = create_comm_channel_id((key_t)connect_channel->comm_key);
-		// printf("Commmunication channel id = %d\n", comm_channel_id);
-		// connect_channel->comm_key = 0;
 	}
 
 	int req_no = 0;
@@ -179,12 +188,6 @@ void get_result()
 
 void connect_to_server()
 {
-	// key_t key = ftok(".", 'b'); // generate key based on current directory and 'a'
-	// if (key == -1)
-	// {
-	// 	perror("ftok");
-	// 	exit(1);
-	// }
 	shmid = shmget(1235, 256, 0666 | IPC_CREAT);
 	if (shmid == -1)
 	{
@@ -209,6 +212,7 @@ void connect_comm_channel()
 	printf("Key read from connect channel: %d\n", connect_channel->comm_key);
 	comm_channel_id = create_comm_channel_id((key_t)connect_channel->comm_key);
 	printf("Commmunication channel id = %d\n", comm_channel_id);
+	printf("------------------------------------------------------------------\n");
 	comm_channel = (struct shared_block *)shmat(comm_channel_id, NULL, 0);
 	comm_channel->comm_key = connect_channel->comm_key;
 	connect_channel->comm_key = 0;
@@ -218,8 +222,7 @@ int main()
 {
 	connect_to_server();
 	int choice;
-	pthread_rwlock_init(&(connect_channel->rwlock), NULL);
-	// pthread_rwlock_unlock(&(connect_channel->rwlock));
+	pthread_rwlock_init(&(connect_channel->rwlock), NULL); // initialize the read write lock
 	while (1)
 	{
 		printf("Enter 1: To register client\nEnter 2: To send request to server for a registered client\nEnter anything else: To quit the client interface\n"); // menu
@@ -242,7 +245,7 @@ int main()
 			get_result();
 			break;
 		default:
-			printf("Quitting\n");
+			printf("Quitting...\n");
 			printf("------------------------------------------------------------------\n");
 			return 0;
 		}
