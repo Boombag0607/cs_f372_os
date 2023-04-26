@@ -1,6 +1,7 @@
 # Projects for Operating System Course
 
 ---
+(checkout branches to see solution code)
 
 ## Assignment 1
 
