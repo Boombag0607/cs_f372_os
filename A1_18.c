@@ -1,14 +1,3 @@
-/*
-Group number 18: Assignment 1 for CS F372 Operating Systems
-Group members:
-1. Shivansh Shukla
-2. Ananya Gautam
-3. Shreyaan Sharma
-4. Shrestha Saxena
-5. Shashwat Tripathi
-6. Shikhar Sachan
-*/
-
 #include <unistd.h>
 #include <stdio.h>
 #include <sys/types.h>
