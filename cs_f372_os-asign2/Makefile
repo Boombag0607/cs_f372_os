@@ -3,11 +3,11 @@ CFLAGS = -Wall -Wextra
 
 all: server client
 
-server: server.c common.h
-    $(CC) $(CFLAGS) -o server server.c -pthread
+server: src/server.c include/common.h
+	$(CC) $(CFLAGS) -o server src/server.c -Iinclude -pthread
 
-client: client.c common.h
-    $(CC) $(CFLAGS) -o client client.c -pthread
+client: src/client.c include/common.h
+	$(CC) $(CFLAGS) -o client src/client.c -Iinclude -pthread
 
 clean:
-    rm -f server client
+	rm -f server client
