@@ -1,16 +1,3 @@
-/*
-Group - 12
-Assignment 2
-Members:
-1. Raj Jagtap - 2020AAPS2113H
-2. Ananya Gautam - 2020AAPS2096H
-3. Jinil Bhavin Shah - 2020AAPS1750H
-3. Shreyaan Sharma - 2020A3PS1139H
-5. Shikhar Sachan - 2020A3PS2140H
-6. Kshtij Agarwal - 2020A3PS2209H
-7. Tanisha Upadhyay - 2020AAPS0351H
-8. Rishabh Khandelwal - 2020A8PS2154H
-*/
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
